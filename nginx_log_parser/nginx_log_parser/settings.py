@@ -14,7 +14,6 @@ import logging
 import os
 from distutils.util import strtobool
 from pathlib import Path
-from dotenv import load_dotenv
 import environ
 
 # Работа с env.dev
@@ -50,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'pytest_django',
+    'django_filters',
 
     "rest_framework",
     "rest_framework.authtoken",
@@ -158,21 +158,68 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        # "file": {
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": "../logs/app.log",
+        #     "maxBytes": 1024*1024*5,  # 5 MB
+        #     "backupCount": 5,
+        #     "formatter": "verbose",
+        # },
+        # "db_file": {
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": "../logs/db.log",
+        #     "maxBytes": 1024*1024*5,  # 5 MB
+        #     "backupCount": 5,
+        #     "formatter": "verbose",
+        # },
+        "mail_admins": {
+            "class": "logging.handlers.SMTPHandler",
+            "level": "ERROR",
+            "formatter": "verbose",
+            "mailhost": ("smtp.example.com", 587),
+            "fromaddr": "Vansheltor@gmail.com",
+            "toaddrs": ["lavrov.python@gmail.com"],
+            "subject": "Your application failed",
+            "credentials": ("username", "password"),
+            "secure": (),
         },
     },
     "loggers": {
-        "root": {
-            "handlers": ["console"],
+        "django": {
+            "handlers": ["console",],  # "file", "mail_admins"
             "level": "INFO",
+            "propagate": True,
         },
         "django.db.backends": {
-            "handlers": ["console"],
-            "level": "ERROR",
+            "handlers": ["console",],  # "db_file"
+            "level": "DEBUG",  # DEBUG для детального логирования запросов
+            "propagate": False,
         },
-    }
+        "myapp": {
+            "handlers": ["console",],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+    "root": {
+        "handlers": ["console", "mail_admins"],
+        "level": "WARNING",
+    },
 }
 
 REST_FRAMEWORK = {
@@ -205,26 +252,3 @@ SECURE_HSTS_SECONDS = 2_592_000  # 30 days
 SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# REDIS settings
-REDIS_HOST = env('REDIS_HOST')
-REDIS_PORT = '6379'
-REDIS_PASSWORD = env("REDIS_PASSWORD")
-
-# CELERY settings
-CELERY_BROKER_URL = 'redis://' + ':' + REDIS_PASSWORD + '@' if REDIS_PASSWORD else 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
-CELERY_RESULT_BACKEND = 'redis://' + ':' + REDIS_PASSWORD + '@' if REDIS_PASSWORD else 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
-CELERY_BROKER_TRANSPORT_OPTION = {'visibility_timeout': 3600}
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Europe/Moscow'
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://' + ':' + REDIS_PASSWORD + '@' if REDIS_PASSWORD else 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/1',
-    }
-}

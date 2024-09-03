@@ -1,0 +1,30 @@
+volumes:
+  postgres_data:
+
+services:
+
+  postgres:
+    image: postgres:alpine
+    container_name: postgres
+    restart: always
+    env_file:
+      - docker/env/.env.dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  django:
+    build: .
+    env_file:
+      - docker/env/.env.dev
+    container_name: django
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    command: sh -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      pytest &&
+      python manage.py runserver 0.0.0.0:8000
+      "

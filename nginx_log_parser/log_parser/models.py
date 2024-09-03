@@ -9,8 +9,8 @@ class LogEntry(models.Model):
         ip_address (GenericIPAddressField): IP адрес.
         timestamp (DateTimeField): Время запроса.
         http_method (str): http метод (GET, POST,...).
-        uri (str): URI запроса.
-        response_code (int): Код ответов.
+        url (str): URI запроса.
+        response_code (int): Код ответа сервера.
         response_size (int): Размер ответа.
     """
 
@@ -30,7 +30,7 @@ class LogEntry(models.Model):
         verbose_name='http метод',
         db_comment='http метод (GET, POST,...)'
     )
-    uri = models.CharField(
+    url = models.CharField(
         max_length=255,
         default='',
         verbose_name='URI запроса',
@@ -47,8 +47,8 @@ class LogEntry(models.Model):
         db_comment='Размер ответа из лога'
     )
 
-    def str(self):
-        return f"{self.ip_address} - {self.http_method} {self.uri}"
+    def __str__(self):
+        return f"{self.ip_address} - {self.http_method} {self.url}"
 
     class Meta:
         db_table = 'log_data'
