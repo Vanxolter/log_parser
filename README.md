@@ -38,7 +38,7 @@ Source link: git@github.com:Vanxolter/log_parser.git
 **ЗАПУСК DEV КОНТЕЙНЕРА**
 
 1) Сборка билда``` sudo docker compose -f docker-compose.dev.yml build ```
-2) Запуск контейнера ``` docker compose -f docker-compose.dev.yml up ```
+2) Запуск контейнера ``` sudo docker compose -f docker-compose.dev.yml up ```
 3) Вход в консоль контейнера ``` docker exec -it django sh ```
 4) Создаем юзера ```python manage.py createsuperuser```
 
